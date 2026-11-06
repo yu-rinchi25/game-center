@@ -98,18 +98,19 @@
     .item-selector {
       display: flex;
       justify-content: center;
-      gap: 4px;
+      gap: 6px;
       margin: 10px 0;
     }
     .item-btn {
       background: #f0f0f0;
       color: #333;
       border: 2px solid #ccc;
-      border-radius: 8px;
+      border-radius: 10px;
       padding: 8px 4px;
-      font-size: 11px;
+      font-size: 13px;
       cursor: pointer;
       flex: 1;
+      line-height: 1.3;
     }
     .item-btn.selected {
       background: #e3f2fd;
@@ -140,13 +141,14 @@
       margin: 4px 0;
     }
 
+    /* 横5×縦3のグリッドに変更 */
     .grid-board {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       grid-template-rows: repeat(3, 1fr);
       width: 100%;
-      max-width: 340px;
-      aspect-ratio: 4 / 3;
+      max-width: 380px;
+      aspect-ratio: 5 / 3;
       background-color: #333;
       gap: 2px;
     }
@@ -169,7 +171,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 20px;
+      font-size: 26px;
       cursor: pointer;
       user-select: none;
       transition: background-color 0.15s;
@@ -219,12 +221,24 @@
     <button class="back-btn" onclick="location.href='../index.html'">← メニューへ戻る</button>
     <h2 style="margin: 10px 0;">🧠 心理戦バトル</h2>
 
-    <div id="setupArea" class="card-box" style="max-width: 420px; margin: 0 auto;">
-      <p>好きな合言葉を決めて入力してね！</p>
-      <input type="text" id="roomIdInput" placeholder="例: tanaka123"><br><br>
-      <button onclick="createRoom()">部屋を作る</button>
-      <button onclick="joinRoom()">部屋に入る</button>
-      <p id="statusMsg" style="color: #666; font-size: 14px; margin-top: 10px;"></p>
+    <!-- スタート選択エリア -->
+    <div id="setupArea" style="max-width: 420px; margin: 0 auto;">
+      <!-- オンライン対戦カード -->
+      <div class="card-box" style="margin-bottom: 15px;">
+        <p style="margin-top:0; font-weight:bold; color:#333;">🌐 友達と対戦する</p>
+        <p style="font-size: 13px; color: #666; margin: 5px 0 10px;">好きな合言葉を決めて入力してね！</p>
+        <input type="text" id="roomIdInput" placeholder="例: tanaka123"><br><br>
+        <button onclick="createRoom()">部屋を作る</button>
+        <button onclick="joinRoom()">部屋に入る</button>
+        <p id="statusMsg" style="color: #666; font-size: 14px; margin-top: 10px;"></p>
+      </div>
+
+      <!-- NPC対戦カード -->
+      <div class="card-box">
+        <p style="margin-top:0; font-weight:bold; color:#333;">🤖 一人で練習する</p>
+        <p style="font-size: 13px; color: #666; margin: 5px 0 10px;">CPU相手に練習プレイができます！</p>
+        <button onclick="startNPCGame()" style="background: #34c759; width: 100%; max-width: 220px; padding: 12px;">🤖 NPCと対戦</button>
+      </div>
     </div>
 
     <div id="playArea" class="game-layout" style="display: none;">
@@ -234,13 +248,13 @@
 
           <div class="item-selector" id="itemSelector">
             <button class="item-btn selected" id="btn-ship" onclick="selectWeapon('🚢', 'btn-ship')">
-              🚢 船 (3)<br><span id="count-ship">1</span>/1
+              <span style="font-size: 16px;">🚢</span> 船 (3)<br><span id="count-ship">1</span>/1
             </button>
             <button class="item-btn" id="btn-rifle" onclick="selectWeapon('🔫', 'btn-rifle')">
-              🔫 ライフル (2)<br><span id="count-rifle">1</span>/1
+              <span style="font-size: 16px;">🔫</span> ライフル (2)<br><span id="count-rifle">1</span>/1
             </button>
             <button class="item-btn" id="btn-glove" onclick="selectWeapon('🥊', 'btn-glove')">
-              🥊 グローブ (1)<br><span id="count-glove">1</span>/1
+              <span style="font-size: 16px;">🥊</span> グローブ (1)<br><span id="count-glove">1</span>/1
             </button>
           </div>
 
@@ -263,7 +277,7 @@
         <h3>📖 遊び方・ルール</h3>
         <ul class="rule-list">
           <li>
-            <strong>① アイテムを配置しよう</strong><br>
+            <strong>① 以下のアイテムを全て配置しよう</strong><br>
             ・🚢 <b>船 (3マス)</b>: 横となりに3マス<br>
             ・🔫 <b>ライフル (2マス)</b>: 上下左右となりに2マス<br>
             ・🥊 <b>グローブ (1マス)</b>: 1マス<br>
@@ -275,7 +289,7 @@
           </li>
           <li>
             <strong>③ 勝利条件</strong><br>
-            相手の合計6マスを先に全て破壊した方の勝ち！
+            相手のアイテム（全6マス）を先に全て破壊した方の勝ち！
           </li>
         </ul>
       </div>
@@ -285,7 +299,7 @@
   <script>
     let currentWeapon = '🚢';
     let weaponCounts = { '🚢': 1, '🔫': 1, '🥊': 1 };
-    let myBoardData = Array(12).fill(null);
+    let myBoardData = Array(15).fill(null);
     let placingIndices = [];
 
     let opAttackedIndex = [];
@@ -296,6 +310,12 @@
     let isMyReady = false;
     let isOpReady = false;
     let isMyTurn = false;
+
+    // NPCモード用変数
+    let isNPC = false;
+    let npcBoardData = Array(15).fill(null);
+    let npcAttackedIndices = [];
+    let myAttackHitCount = 0;
 
     function selectWeapon(symbol, btnId) {
       if (currentWeapon !== symbol) {
@@ -320,14 +340,14 @@
       myBoardData.fill(null);
       placingIndices = [];
 
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < 15; i++) {
         const cell = document.createElement('div');
         cell.className = 'cell';
         cell.onclick = () => attackCell(i);
         topBoard.appendChild(cell);
       }
 
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < 15; i++) {
         const cell = document.createElement('div');
         cell.className = 'cell';
         cell.onclick = () => handleBottomCellClick(i);
@@ -341,7 +361,7 @@
 
       if (myBoardData[index]) {
         const removedWeapon = myBoardData[index];
-        for (let i = 0; i < 12; i++) {
+        for (let i = 0; i < 15; i++) {
           if (myBoardData[i] === removedWeapon) {
             myBoardData[i] = null;
           }
@@ -364,8 +384,8 @@
         return;
       }
 
-      const r = Math.floor(index / 4);
-      const c = index % 4;
+      const r = Math.floor(index / 5);
+      const c = index % 5;
 
       if (currentWeapon === '🚢') {
         if (placingIndices.length === 0) {
@@ -373,8 +393,8 @@
           showWarn('船の1マス目を置きました。横の隣を押してね。');
         } 
         else if (placingIndices.length === 1) {
-          const firstR = Math.floor(placingIndices[0] / 4);
-          const firstC = placingIndices[0] % 4;
+          const firstR = Math.floor(placingIndices[0] / 5);
+          const firstC = placingIndices[0] % 5;
           if (r === firstR && Math.abs(c - firstC) === 1) {
             placingIndices.push(index);
             showWarn('船の2マス目を置きました。続きを押してね。');
@@ -385,9 +405,9 @@
         } 
         else if (placingIndices.length === 2) {
           const sorted = [...placingIndices].sort((a, b) => a - b);
-          const firstR = Math.floor(sorted[0] / 4);
-          const minC = sorted[0] % 4;
-          const maxC = sorted[1] % 4;
+          const firstR = Math.floor(sorted[0] / 5);
+          const minC = sorted[0] % 5;
+          const maxC = sorted[1] % 5;
 
           if (r === firstR && (c === minC - 1 || c === maxC + 1)) {
             placingIndices.push(index);
@@ -410,8 +430,8 @@
           showWarn('ライフルの1マス目を置きました。隣を押してね。');
         } 
         else if (placingIndices.length === 1) {
-          const firstR = Math.floor(placingIndices[0] / 4);
-          const firstC = placingIndices[0] % 4;
+          const firstR = Math.floor(placingIndices[0] / 5);
+          const firstC = placingIndices[0] % 5;
           const dist = Math.abs(r - firstR) + Math.abs(c - firstC);
 
           if (dist === 1) {
@@ -442,7 +462,7 @@
 
     function updateBoardDisplay() {
       const cells = document.querySelectorAll('#bottomBoard .cell');
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < 15; i++) {
         cells[i].classList.remove('placing');
         if (myBoardData[i]) {
           cells[i].textContent = myBoardData[i];
@@ -470,6 +490,17 @@
 
       isMyReady = true;
       showWarn('');
+
+      if (isNPC) {
+        gamePhase = 'battle';
+        document.getElementById('readyBtn').style.display = 'none';
+        document.getElementById('itemSelector').style.display = 'none';
+        document.getElementById('warnMsg').style.display = 'none';
+        isMyTurn = true;
+        updateTurnDisplay();
+        return;
+      }
+
       document.getElementById('readyBtn').disabled = true;
       document.getElementById('readyBtn').textContent = '相手の準備待ち...';
       document.getElementById('gameStatus').textContent = '相手が「準備完了」を押すのを待っています...';
@@ -499,7 +530,7 @@
         status.textContent = '⚔️ あなたのターン！攻撃！';
         status.style.color = '#007aff';
       } else {
-        status.textContent = '🛡️ 相手のターン！待機中...';
+        status.textContent = isNPC ? '🤖 NPCのターン！待機中...' : '🛡️ 相手のターン！待機中...';
         status.style.color = '#ff3b30';
       }
     }
@@ -513,11 +544,111 @@
 
       opAttackedIndex.push(index);
       isMyTurn = false;
-      document.getElementById('gameStatus').textContent = '攻撃中...';
 
+      if (isNPC) {
+        const topCell = document.querySelectorAll('#topBoard .cell')[index];
+        const hitWeapon = npcBoardData[index];
+
+        if (hitWeapon) {
+          topCell.classList.add('hit');
+          topCell.textContent = '💥';
+          myAttackHitCount++;
+        } else {
+          topCell.classList.add('miss');
+          topCell.textContent = '❌';
+        }
+
+        if (myAttackHitCount >= 6) {
+          gamePhase = 'result';
+          document.getElementById('gameStatus').textContent = '🎉 相手の配置を全滅させました！あなたの勝ち！';
+          document.getElementById('gameStatus').style.color = '#34c759';
+          document.getElementById('resetBtn').style.display = 'block';
+        } else {
+          updateTurnDisplay();
+          setTimeout(npcAttackTurn, 800);
+        }
+        return;
+      }
+
+      document.getElementById('gameStatus').textContent = '攻撃中...';
       if (conn && conn.open) {
         conn.send({ type: 'ATTACK', index: index });
       }
+    }
+
+    function npcAttackTurn() {
+      if (gamePhase !== 'battle') return;
+
+      let available = [];
+      for (let i = 0; i < 15; i++) {
+        if (!npcAttackedIndices.includes(i)) available.push(i);
+      }
+      if (available.length === 0) return;
+
+      const targetIndex = available[Math.floor(Math.random() * available.length)];
+      npcAttackedIndices.push(targetIndex);
+
+      const hitWeapon = myBoardData[targetIndex];
+      const bottomCell = document.querySelectorAll('#bottomBoard .cell')[targetIndex];
+
+      if (hitWeapon) {
+        myHitCount++;
+        bottomCell.classList.add('hit');
+        bottomCell.textContent = '💥';
+      } else {
+        bottomCell.classList.add('miss');
+        bottomCell.textContent = '❌';
+      }
+
+      if (myHitCount >= 6) {
+        gamePhase = 'result';
+        document.getElementById('gameStatus').textContent = '😭 全ての配置が破壊されました... あなたの負け！';
+        document.getElementById('gameStatus').style.color = '#ff3b30';
+        document.getElementById('resetBtn').style.display = 'block';
+      } else {
+        isMyTurn = true;
+        updateTurnDisplay();
+      }
+    }
+
+    function setupNPCBoard() {
+      npcBoardData = Array(15).fill(null);
+
+      // 1. 船（横3マス / 横5の条件）
+      const shipPatterns = [
+        [0,1,2], [1,2,3], [2,3,4],
+        [5,6,7], [6,7,8], [7,8,9],
+        [10,11,12], [11,12,13], [12,13,14]
+      ];
+      const shipChoice = shipPatterns[Math.floor(Math.random() * shipPatterns.length)];
+      shipChoice.forEach(i => npcBoardData[i] = '🚢');
+
+      // 2. ライフル（隣接2マス）
+      let validRiflePatterns = [];
+      for (let i = 0; i < 15; i++) {
+        const r = Math.floor(i / 5), c = i % 5;
+        if (c + 1 < 5 && !npcBoardData[i] && !npcBoardData[i+1]) validRiflePatterns.push([i, i+1]);
+        if (r + 1 < 3 && !npcBoardData[i] && !npcBoardData[i+5]) validRiflePatterns.push([i, i+5]);
+      }
+      const rifleChoice = validRiflePatterns[Math.floor(Math.random() * validRiflePatterns.length)];
+      rifleChoice.forEach(i => npcBoardData[i] = '🔫');
+
+      // 3. グローブ（残り1マス）
+      let emptyIndices = [];
+      for (let i = 0; i < 15; i++) {
+        if (!npcBoardData[i]) emptyIndices.push(i);
+      }
+      const gloveChoice = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+      npcBoardData[gloveChoice] = '🥊';
+    }
+
+    function startNPCGame() {
+      isNPC = true;
+      isHost = true;
+      document.getElementById('setupArea').style.display = 'none';
+      document.getElementById('playArea').style.display = 'flex';
+      initBoards();
+      setupNPCBoard();
     }
 
     function resetGame(isInitiator = true) {
@@ -527,6 +658,8 @@
       weaponCounts = { '🚢': 1, '🔫': 1, '🥊': 1 };
       opAttackedIndex = [];
       myHitCount = 0;
+      npcAttackedIndices = [];
+      myAttackHitCount = 0;
 
       updateCountDisplay();
       initBoards();
@@ -541,6 +674,12 @@
 
       const status = document.getElementById('gameStatus');
       status.style.color = '#333';
+
+      if (isNPC) {
+        setupNPCBoard();
+        status.textContent = 'アイテムを配置したら「準備完了」を押してね！';
+        return;
+      }
 
       if (isInitiator) {
         status.textContent = 'アイテムを配置したら「準備完了」を押してね！';
@@ -560,6 +699,7 @@
       if (!roomPass) return alert('合言葉を入れてね！');
       document.getElementById('statusMsg').textContent = "接続待機中… 相手の接続を待っています";
       
+      isNPC = false;
       isHost = true;
       peer = new Peer('game1-' + roomPass);
       peer.on('connection', (c) => {
@@ -573,6 +713,7 @@
       if (!roomPass) return alert('合言葉を入れてね！');
       document.getElementById('statusMsg').textContent = "接続中…";
       
+      isNPC = false;
       isHost = false;
       peer = new Peer();
       peer.on('open', () => {
