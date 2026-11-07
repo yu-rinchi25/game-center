@@ -21,6 +21,19 @@
     .font-arcade {
       font-family: 'DotGothic16', sans-serif;
     }
+    .container {
+      width: 100%;
+      max-width: 860px;
+      text-align: center;
+    }
+    .card-box {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #1e293b;
+      padding: 15px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      box-sizing: border-box;
+    }
 
     /* Glow & Visual Depth Effects */
     .glow-cyan { box-shadow: 0 0 20px rgba(6, 182, 212, 0.35); }
@@ -85,6 +98,30 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #3b4f6c;
     }
+  
+    /* MOBILE FULLSCREEN (スマホ全画面) */
+    html { height: 100%; }
+    body { min-height: 100dvh; min-height: 100svh; }
+    @media (max-width: 768px) {
+      body { min-height: 100dvh; }
+      /* 全幅・全高で使う */
+      main { max-width: 100% !important; padding: 6px !important; }
+      header > div { max-width: 100% !important; }
+      /* バトルアリーナ全体を縦いっぱい */
+      #battle-arena { flex: 1; min-height: 0; }
+      /* 左右2分割を解除して全幅に */
+      .grid.lg\:grid-cols-12 { grid-template-columns: 1fr !important; }
+      /* 手札は横スクロー／はみ出し防止 */
+      #player-hand-container { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+    }
+    /* スマホ横持ち：上下圧縮して全画面 */
+    @media (max-width: 900px) and (orientation: landscape) {
+      header { padding-top: 6px !important; padding-bottom: 6px !important; }
+      main { padding: 6px !important; gap: 8px !important; }
+      #cpu-section, #player-section { padding: 10px !important; }
+      .lg\:col-span-7, .lg\:col-span-5 { min-height: 0 !important; }
+    }
+
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-black">
@@ -107,7 +144,7 @@
       </div>
 
       <!-- Turn Counter -->
-      <div class="flex items-center space-x-2 bg-slate-950/80 px-4 py-1 rounded-full border border-slate-800 shadow-inner">
+      <div id="turn-counter" style="display:none;" class="flex items-center space-x-2 bg-slate-950/80 px-4 py-1 rounded-full border border-slate-800 shadow-inner">
         <span class="text-xs text-slate-400 font-mono">TURN</span>
         <span id="turn-display" class="font-arcade text-cyan-400 text-lg font-bold">1</span>
       </div>
@@ -117,13 +154,13 @@
         <button onclick="location.href='../index.html'" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
           ← メニュー
         </button>
-        <button id="btn-sound" onclick="toggleSound()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="サウンド切り替え">
+        <button id="btn-sound" onclick="toggleSound()" style="display:none;" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="サウンド切り替え">
           <span id="sound-icon">🔊</span>
         </button>
         <button id="btn-rules-header" onclick="openRulesModal()" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 transition" style="display:none;">
           📖 ルール
         </button>
-        <button onclick="confirmRestartModal()" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-950/60 hover:bg-red-900/70 text-red-300 border border-red-500/40 transition">
+        <button id="btn-reset" onclick="confirmRestartModal()" style="display:none;" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-950/60 hover:bg-red-900/70 text-red-300 border border-red-500/40 transition">
           🔄 リセット
         </button>
       </div>
@@ -131,8 +168,57 @@
   </header>
 
   <!-- ==================== BATTLE ARENA ==================== -->
-  <main class="max-w-6xl w-full mx-auto p-3 sm:p-5 flex-1 flex flex-col gap-4 justify-between">
+  <main class="max-w-6xl w-full mx-auto flex-1 flex flex-col gap-4 justify-between" style="padding: 15px 10px; box-sizing: border-box;">
 
+    <!-- モード選択画面（game1の setupArea と全く同じ構造・game2内容） -->
+    <div id="mode-select-screen" style="max-width: 720px; margin: 0 auto;">
+      <div class="card-box" style="margin-bottom: 15px; text-align:center;">
+        <div style="font-size: 40px; line-height:1;">⚔️</div>
+        <p class="font-arcade" style="margin:6px 0 0; font-size: 20px; font-weight:bold; color:#e2e8f0;">The Duel</p>
+        <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0;">ハイランダーカードバトル</p>
+      </div>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; text-align:center;">
+        <!-- 友達と対戦 枠 -->
+        <div class="card-box">
+          <div style="width:48px; height:48px; margin:0 auto 8px; border-radius:12px; background: linear-gradient(135deg, #0d9488, #0891b2); display:flex; align-items:center; justify-content:center; font-size:24px;">🌐</div>
+          <p style="margin-top:0; font-weight:bold; color:#e2e8f0; font-size:16px;">友達と対戦</p>
+          <p style="font-size: 12px; color: #94a3b8; margin: 5px 0 10px; line-height:1.5;">好きな合言葉を決めて入力してね！</p>
+          <input type="text" id="room-id-input" placeholder="例: tanaka123" class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-sm text-center placeholder:text-slate-600 focus:border-cyan-500 outline-none" style="width:100%; box-sizing:border-box;">
+          <div style="display:flex; gap:8px; margin-top:10px;">
+            <button onclick="createRoom()" style="flex:1; background: linear-gradient(135deg, #f59e0b, #d97706); color:#020617; margin:0; padding:12px; border-radius:12px; font-size:13px;">部屋を作る</button>
+            <button onclick="joinRoom()" style="flex:1; background: linear-gradient(135deg, #0d9488, #0891b2); color:#fff; margin:0; padding:12px; border-radius:12px; font-size:13px;">部屋に入る</button>
+          </div>
+          <p id="online-status" style="color: #94a3b8; font-size: 14px; margin-top: 10px; min-height:18px;"></p>
+        </div>
+
+        <!-- 一人で対戦 枠 -->
+        <div class="card-box">
+          <div style="width:48px; height:48px; margin:0 auto 8px; border-radius:12px; background: linear-gradient(135deg, #7c3aed, #e11d48); display:flex; align-items:center; justify-content:center; font-size:24px;">🤖</div>
+          <p style="margin-top:0; font-weight:bold; color:#e2e8f0; font-size:16px;">一人でプレイ</p>
+          <p style="font-size: 12px; color: #94a3b8; margin: 5px 0 10px; line-height:1.5;">CPUと対戦できます</p>
+          <button onclick="startSoloFromModal()" style="background: linear-gradient(135deg, #f59e0b, #d97706); color:#020617; width: 100%; margin:0; padding:12px; border-radius:12px; font-size:14px;">🤖 CPUと対戦</button>
+        </div>
+      </div>
+
+      <!-- ルール（選択画面に直書き） -->
+      <div class="card-box" style="margin-top: 15px; text-align:left;">
+        <p style="margin-top:0; font-weight:bold; color:#67e8f9; font-size:14px;">📖 ルール（対戦中は右上のボタンで確認できます）</p>
+        <div style="font-size: 13px; color: #cbd5e1; line-height: 1.7; margin: 10px 0 0;">
+          <div style="margin-bottom:8px;">
+            <b>① 目的</b> — 手札から1枚選んで同時オープン。先に相手HP0にした方が勝ち！<br>
+            <span style="display:block; margin:6px 0;"><span style="font-size:26px;">⚔️</span> <b>攻撃</b> — ダメージを与える</span>
+            <span style="display:block; margin:6px 0;"><span style="font-size:26px;">🛡️</span> <b>まもる</b> — ダメージを無効化</span>
+            <span style="display:block; margin:6px 0;"><span style="font-size:26px;">💖</span> <b>自己再生</b> — HPを回復する</span>
+          </div>
+          <div style="margin-bottom:8px;"><b>② 優先度</b> — <span style="font-size:20px;">①</span> まもる/自己再生 → <span style="font-size:20px;">②</span> 不意打ち → <span style="font-size:20px;">③</span> その他。集中で次回効果が2倍。</div>
+          <div><b>③ 勝利</b> — 先に相手のHPを0にした方の勝ち！</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 対戦画面（モード選択後に表示） -->
+    <div id="battle-arena" class="hidden flex-col gap-4 justify-between flex-1">
     <!-- 1. CPU OPPONENT SECTION -->
     <section id="cpu-section" class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 relative overflow-hidden shadow-xl">
       <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -295,6 +381,7 @@
       <div id="player-float-container" class="absolute top-2 left-1/2 -translate-x-1/2 pointer-events-none z-20"></div>
     </section>
 
+    </div>
   </main>
 
   <!-- ==================== FOOTER ==================== -->
@@ -306,25 +393,29 @@
 
   <!-- 0. MODE SELECT MODAL -->
   <div id="modal-mode-select" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-slate-900 border border-cyan-500/50 rounded-2xl p-5 max-w-md w-full shadow-2xl glow-cyan">
+    <div class="bg-slate-900 border border-cyan-500/50 rounded-2xl p-5 max-w-2xl w-full shadow-2xl glow-cyan">
       <div class="text-center pb-3 border-b border-slate-800 mb-4">
         <h3 class="font-arcade text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-amber-300 to-rose-400">対戦モード選択</h3>
         <p class="text-xs text-slate-400 mt-1">遊び方を選んでね！</p>
       </div>
-      <div class="bg-slate-950/70 rounded-xl border border-slate-800 p-4 mb-3">
-        <p class="font-bold text-slate-100 text-sm mb-1">🤖 一人で対戦</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div class="bg-slate-950/70 rounded-xl border border-slate-800 p-4 text-center">
+        <div class="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-purple-600 to-rose-600 flex items-center justify-center text-2xl shadow-lg">🤖</div>
+        <p class="font-bold text-slate-100 text-sm mt-2 mb-1">一人で対戦</p>
         <p class="text-xs text-slate-400 mb-3">CPU（ARCADE MASTER）相手に練習できます</p>
         <button onclick="startSoloFromModal()" class="w-full py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black shadow-lg shadow-cyan-500/30 transition">🤖 CPUと対戦</button>
       </div>
-      <div class="bg-slate-950/70 rounded-xl border border-slate-800 p-4 mb-3">
-        <p class="font-bold text-slate-100 text-sm mb-1">🌐 友達と対戦</p>
+      <div class="bg-slate-950/70 rounded-xl border border-slate-800 p-4 text-center">
+        <div class="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-teal-500 to-cyan-600 flex items-center justify-center text-2xl shadow-lg">🌐</div>
+        <p class="font-bold text-slate-100 text-sm mt-2 mb-1">友達と対戦</p>
         <p class="text-xs text-slate-400 mb-3">好きな合言葉を決めて入力してね！（game1と共通仕様）</p>
-        <input id="room-id-input" type="text" placeholder="例: tanaka123" class="w-full px-3 py-2.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-100 text-sm text-center placeholder:text-slate-600 focus:border-cyan-500 outline-none mb-3">
+        <input id="room-id-input-modal" type="text" placeholder="例: tanaka123" class="w-full px-3 py-2.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-100 text-sm text-center placeholder:text-slate-600 focus:border-cyan-500 outline-none mb-3">
         <div class="flex gap-2">
           <button onclick="createRoom()" class="flex-1 py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black transition">部屋を作る</button>
           <button onclick="joinRoom()" class="flex-1 py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-black transition">部屋に入る</button>
         </div>
         <p id="online-status" class="text-xs text-slate-400 text-center mt-3 min-h-[18px]"></p>
+      </div>
       </div>
       <div class="bg-slate-950/70 rounded-xl border border-slate-800 p-4 mb-3 text-left">
         <p class="font-bold text-cyan-300 text-xs mb-2">📖 遊び方（対戦画面では右上ボタンで確認）</p>
@@ -719,8 +810,8 @@
       initRulesModalContent();
       isOnlineMode = false;
       startNewGame();
-      // Show mode select on boot (solo / online)
-      document.getElementById('modal-mode-select').classList.remove('hidden');
+      // Show mode select on boot (solo / online) — game1と同じページ内画面
+      showModeSelectModal();
     };
 
     function startNewGame() {
@@ -771,12 +862,29 @@
 
     /* ==================== ONLINE MULTIPLAYER (PeerJS) ==================== */
     function showModeSelectModal() {
-      document.getElementById('modal-mode-select').classList.remove('hidden');
+      // game1と共通: 対戦画面は隠し、モード選択画面を表示
+      const ms = document.getElementById('mode-select-screen');
+      const ba = document.getElementById('battle-arena');
+      if (ms) ms.classList.remove('hidden');
+      if (ba) { ba.classList.add('hidden'); ba.classList.remove('flex'); }
       setRulesBtnVisible(false);
+      setBattleHeaderVisible(false);
     }
     function hideModeSelectModal() {
-      document.getElementById('modal-mode-select').classList.add('hidden');
+      const ms = document.getElementById('mode-select-screen');
+      const ba = document.getElementById('battle-arena');
+      if (ms) ms.classList.add('hidden');
+      if (ba) { ba.classList.remove('hidden'); ba.classList.add('flex'); }
       setRulesBtnVisible(true);
+      setBattleHeaderVisible(true);
+    }
+    function setBattleHeaderVisible(show) {
+      const tc = document.getElementById('turn-counter');
+      const snd = document.getElementById('btn-sound');
+      const rst = document.getElementById('btn-reset');
+      if (tc) tc.style.display = show ? '' : 'none';
+      if (snd) snd.style.display = show ? '' : 'none';
+      if (rst) rst.style.display = show ? '' : 'none';
     }
     function setRulesBtnVisible(show) {
       const b = document.getElementById('btn-rules-header');
