@@ -224,11 +224,38 @@
     .bottom-board .cell.placing { background-color: #713f12; }
 
     .status-bar {
-      font-size: 14px;
-      font-weight: bold;
+      font-size: 19px;
+      font-weight: 900;
       color: #e2e8f0;
-      min-height: 22px;
-      margin-bottom: 5px;
+      min-height: 36px;
+      margin-bottom: 8px;
+      padding: 8px 12px;
+      background: rgba(2, 6, 23, 0.6);
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      line-height: 1.3;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+    }
+    @media (min-width: 768px) {
+      .status-bar { font-size: 21px; }
+    }
+    .miss-toast {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9998;
+      background: rgba(2, 6, 23, 0.92);
+      color: #f1f5f9;
+      border: 2px solid #f59e0b;
+      border-radius: 14px;
+      padding: 16px 22px;
+      font-size: 18px;
+      font-weight: 900;
+      text-align: center;
+      box-shadow: 0 0 30px rgba(245,158,11,0.5);
+      pointer-events: none;
+      max-width: 80vw;
     }
 
     .ready-btn {
@@ -281,35 +308,50 @@
 
   <div class="container" style="padding: 15px 10px; box-sizing: border-box;">
 
-    <!-- スタート選択エリア -->
-    <div id="setupArea" style="max-width: 420px; margin: 0 auto;">
-      <!-- オンライン対戦カード (game2/game3と共通デザイン) -->
-      <div class="card-box" style="margin-bottom: 15px;">
-        <p style="margin-top:0; font-weight:bold; color:#e2e8f0;">🌐 友達と対戦する</p>
-        <p style="font-size: 13px; color: #94a3b8; margin: 5px 0 10px;">好きな合言葉を決めて入力してね！</p>
-        <input type="text" id="roomIdInput" placeholder="例: tanaka123" class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-sm text-center placeholder:text-slate-600 focus:border-cyan-500 outline-none" style="width:100%; box-sizing:border-box;">
-        <div style="display:flex; gap:8px; margin-top:10px;">
-          <button onclick="createRoom()" style="flex:1; background: linear-gradient(135deg, #f59e0b, #d97706); color:#020617; margin:0; padding:12px; border-radius:12px; font-size:13px;">部屋を作る</button>
-          <button onclick="joinRoom()" style="flex:1; background: linear-gradient(135deg, #0d9488, #0891b2); color:#fff; margin:0; padding:12px; border-radius:12px; font-size:13px;">部屋に入る</button>
-        </div>
-        <p id="statusMsg" style="color: #94a3b8; font-size: 14px; margin-top: 10px; min-height:18px;"></p>
+    <!-- スタート選択エリア（game3と共通レイアウト） -->
+    <div id="setupArea" style="max-width: 720px; margin: 0 auto;">
+      <div class="card-box" style="margin-bottom: 15px; text-align:center;">
+        <div style="font-size: 40px; line-height:1;">🧠</div>
+        <p class="font-arcade" style="margin:6px 0 0; font-size: 20px; font-weight:bold; color:#e2e8f0;">Mind Game</p>
+        <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0;">5×3マスの心理戦バトル</p>
       </div>
 
-      <!-- NPC対戦カード -->
-      <div class="card-box">
-        <p style="margin-top:0; font-weight:bold; color:#e2e8f0;">🤖 一人で練習する</p>
-        <p style="font-size: 13px; color: #94a3b8; margin: 5px 0 10px;">CPU相手に練習プレイができます！</p>
-        <button onclick="startNPCGame()" style="background: linear-gradient(135deg, #f59e0b, #d97706); color:#020617; width: 100%; max-width: 220px; padding: 12px;">🤖 NPCと対戦</button>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; text-align:center;">
+        <!-- 友達と対戦 枠 -->
+        <div class="card-box">
+          <div style="width:48px; height:48px; margin:0 auto 8px; border-radius:12px; background: linear-gradient(135deg, #0d9488, #0891b2); display:flex; align-items:center; justify-content:center; font-size:24px;">🌐</div>
+          <p style="margin-top:0; font-weight:bold; color:#e2e8f0; font-size:16px;">友達と対戦</p>
+          <p style="font-size: 12px; color: #94a3b8; margin: 5px 0 10px; line-height:1.5;">好きな合言葉を決めて入力してね！</p>
+          <input type="text" id="roomIdInput" placeholder="例: tanaka123" class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-sm text-center placeholder:text-slate-600 focus:border-cyan-500 outline-none" style="width:100%; box-sizing:border-box;">
+          <div style="display:flex; gap:8px; margin-top:10px;">
+            <button onclick="createRoom()" style="flex:1; background: linear-gradient(135deg, #f59e0b, #d97706); color:#020617; margin:0; padding:12px; border-radius:12px; font-size:13px;">部屋を作る</button>
+            <button onclick="joinRoom()" style="flex:1; background: linear-gradient(135deg, #0d9488, #0891b2); color:#fff; margin:0; padding:12px; border-radius:12px; font-size:13px;">部屋に入る</button>
+          </div>
+          <p id="statusMsg" style="color: #94a3b8; font-size: 14px; margin-top: 10px; min-height:18px;"></p>
+        </div>
+
+        <!-- 一人で対戦 枠 -->
+        <div class="card-box">
+          <div style="width:48px; height:48px; margin:0 auto 8px; border-radius:12px; background: linear-gradient(135deg, #7c3aed, #e11d48); display:flex; align-items:center; justify-content:center; font-size:24px;">🤖</div>
+          <p style="margin-top:0; font-weight:bold; color:#e2e8f0; font-size:16px;">一人でプレイ</p>
+          <p style="font-size: 12px; color: #94a3b8; margin: 5px 0 10px; line-height:1.5;">CPUと対戦できます</p>
+          <button onclick="startNPCGame()" style="background: linear-gradient(135deg, #f59e0b, #d97706); color:#020617; width: 100%; margin:0; padding:12px; border-radius:12px; font-size:14px;">🤖 CPUと対戦</button>
+        </div>
       </div>
 
       <!-- ルール（選択画面に直書き） -->
       <div class="card-box" style="margin-top: 15px; text-align:left;">
-        <p style="margin-top:0; font-weight:bold; color:#67e8f9;">📖 遊び方</p>
-        <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6; margin: 8px 0;">
-          <b>① 配置</b> — 5×3マスの自分の陣地に配置：🚢 船（横3マス）・🔫 ライフル（上下左右2マス）・🥊 グローブ（1マス）。置いたマスを再度タップで取り消せます。<br>
-          <b>② バトル</b> — 準備完了後、交互に相手エリアをタップして攻撃。💥 ヒット / ❌ 外れ。<br>
-          <b>③ 勝利</b> — 相手のアイテム（全6マス）を先に全破壊した方の勝ち！
-        </p>
+        <p style="margin-top:0; font-weight:bold; color:#67e8f9; font-size:14px;">📖 ルール（対戦中は右上のボタンで確認できます）</p>
+        <div style="font-size: 13px; color: #cbd5e1; line-height: 1.7; margin: 10px 0 0;">
+          <div style="margin-bottom:8px;">
+            <b>① 配置</b> — 5×3マスの自分の陣地に配置。置いたマスを再度タップで取り消せます。<br>
+            <span style="display:block; margin:6px 0;"><span style="font-size:26px;">🚢</span> <b>船（横3マス）</b></span>
+            <span style="display:block; margin:6px 0;"><span style="font-size:26px;">🔫</span> <b>ライフル（上下左右2マス）</b></span>
+            <span style="display:block; margin:6px 0;"><span style="font-size:26px;">🥊</span> <b>グローブ（1マス）</b></span>
+          </div>
+          <div style="margin-bottom:8px;"><b>② バトル</b> — 準備完了後、交互に相手エリアをタップして攻撃。<span style="font-size:20px;">💥</span> ヒット / <span style="font-size:20px;">❌</span> 外れ。</div>
+          <div><b>③ 勝利</b> — 相手のアイテム（全6マス）を先に全破壊した方の勝ち！</div>
+        </div>
       </div>
     </div>
 
@@ -358,11 +400,11 @@
       </div>
       <div class="text-xs text-slate-300 space-y-2 leading-relaxed" style="overflow-y:auto;">
         <p><b>1. 配置フェイズ</b> — 5×3マスの自分の陣地にアイテムを配置します。</p>
-        <ul class="list-disc pl-4 space-y-1 text-slate-400">
-          <li>🚢 <b>船（3マス）</b>: 横に並んだ3マス</li>
-          <li>🔫 <b>ライフル（2マス）</b>: 上下左右に隣接した2マス</li>
-          <li>🥊 <b>グローブ（1マス）</b>: 1マス</li>
-        </ul>
+        <div class="space-y-1 text-slate-300">
+          <div><span style="font-size:26px;">🚢</span> <b>船（横3マス）</b>: 横に並んだ3マス</div>
+          <div><span style="font-size:26px;">🔫</span> <b>ライフル（上下左右2マス）</b>: 上下左右に隣接した2マス</div>
+          <div><span style="font-size:26px;">🥊</span> <b>グローブ（1マス）</b>: 1マス</div>
+        </div>
         <p>※置いたマスをもう一度タップで取り消せます。</p>
         <p><b>2. バトルフェイズ</b> — 準備完了後、交互に相手エリアのマスを1つタップして攻撃します。💥 がヒット、❌ が外れです。</p>
         <p><b>3. 勝利条件</b> — 相手のアイテム（全6マス）を先に全て破壊した方の勝ちです。</p>
@@ -414,6 +456,35 @@
 
     function showWarn(msg) {
       document.getElementById('warnMsg').textContent = msg;
+    }
+
+    let missToastTimer = null;
+    let isMissLocked = false;
+    const MISS_LOCK_MS = 2000;
+    function showMissToast(msg) {
+      let el = document.getElementById('miss-toast');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'miss-toast';
+        el.className = 'miss-toast';
+        document.body.appendChild(el);
+      }
+      el.textContent = msg || 'そこには何もなかった';
+      el.style.display = 'block';
+      if (missToastTimer) clearTimeout(missToastTimer);
+      missToastTimer = setTimeout(() => { el.style.display = 'none'; }, MISS_LOCK_MS);
+    }
+
+    // 外れ: ❌は付けず、画面中央に2秒表示。その間は両者とも入力停止
+    function flashMissCell(cell) {
+      showMissToast('そこには何もなかった');
+      isMissLocked = true;
+      if (missToastTimer) clearTimeout(missToastTimer);
+      missToastTimer = setTimeout(() => {
+        const el2 = document.getElementById('miss-toast');
+        if (el2) el2.style.display = 'none';
+        isMissLocked = false;
+      }, MISS_LOCK_MS);
     }
 
     function initBoards() {
@@ -620,6 +691,7 @@
     }
 
     function attackCell(index) {
+      if (isMissLocked) return;
       if (gamePhase !== 'battle' || !isMyTurn) return;
       if (opAttackedIndex.includes(index)) {
         showWarn('⚠️ そこはすでに攻撃済みです！');
@@ -638,8 +710,7 @@
           topCell.textContent = '💥';
           myAttackHitCount++;
         } else {
-          topCell.classList.add('miss');
-          topCell.textContent = '❌';
+          flashMissCell(topCell);
         }
 
         if (myAttackHitCount >= 6) {
@@ -649,7 +720,7 @@
           document.getElementById('resetBtn').style.display = 'block';
         } else {
           updateTurnDisplay();
-          setTimeout(npcAttackTurn, 800);
+          setTimeout(npcAttackTurn, isMissLocked ? (MISS_LOCK_MS + 300) : 800);
         }
         return;
       }
@@ -662,6 +733,7 @@
 
     function npcAttackTurn() {
       if (gamePhase !== 'battle') return;
+      if (isMissLocked) { setTimeout(npcAttackTurn, 400); return; }
 
       let available = [];
       for (let i = 0; i < 15; i++) {
@@ -680,8 +752,7 @@
         bottomCell.classList.add('hit');
         bottomCell.textContent = '💥';
       } else {
-        bottomCell.classList.add('miss');
-        bottomCell.textContent = '❌';
+        flashMissCell(bottomCell);
       }
 
       if (myHitCount >= 6) {
@@ -737,6 +808,10 @@
     }
 
     function resetGame(isInitiator = true) {
+      isMissLocked = false;
+      if (missToastTimer) clearTimeout(missToastTimer);
+      const _mt = document.getElementById('miss-toast');
+      if (_mt) _mt.style.display = 'none';
       gamePhase = 'setup';
       isMyReady = false;
       isOpReady = false;
@@ -843,8 +918,7 @@
             bottomCell.classList.add('hit');
             bottomCell.textContent = '💥';
           } else {
-            bottomCell.classList.add('miss');
-            bottomCell.textContent = '❌';
+            flashMissCell(bottomCell);
           }
 
           const isGameOver = myHitCount >= 6;
@@ -861,6 +935,13 @@
             document.getElementById('gameStatus').textContent = '😭 全ての配置が破壊されました... あなたの負け！';
             document.getElementById('gameStatus').style.color = '#ff3b30';
             document.getElementById('resetBtn').style.display = 'block';
+          } else if (!isHit) {
+            // 外れ: 2秒の表示が終わってから次のターンを返す（両者停止）
+            setTimeout(() => {
+              if (gamePhase !== 'battle') return;
+              isMyTurn = true;
+              updateTurnDisplay();
+            }, MISS_LOCK_MS + 100);
           } else {
             isMyTurn = true;
             updateTurnDisplay();
@@ -874,8 +955,7 @@
             topCell.classList.add('hit');
             topCell.textContent = '💥';
           } else {
-            topCell.classList.add('miss');
-            topCell.textContent = '❌';
+            flashMissCell(topCell);
           }
 
           if (data.isGameOver) {
@@ -883,6 +963,9 @@
             document.getElementById('gameStatus').textContent = '🎉 相手の配置を全滅させました！あなたの勝ち！';
             document.getElementById('gameStatus').style.color = '#34c759';
             document.getElementById('resetBtn').style.display = 'block';
+          } else if (!data.isHit) {
+            // 外れ: 表示中は自分のターンも進めない（相手のターン表示のまま）
+            updateTurnDisplay();
           } else {
             updateTurnDisplay();
           }
