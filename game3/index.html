@@ -19,6 +19,14 @@
     .font-arcade {
       font-family: 'DotGothic16', sans-serif;
     }
+    .card-box {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #1e293b;
+      padding: 15px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      box-sizing: border-box;
+    }
     ::-webkit-scrollbar {
       width: 6px;
     }
@@ -74,42 +82,49 @@
   <main class="max-w-4xl w-full mx-auto p-3 sm:p-5 flex-1 flex flex-col justify-center">
 
     <!-- モード選択画面（game1 / game2と同じ 2枠） -->
-    <div id="mode-select-screen" class="max-w-2xl w-full mx-auto space-y-4">
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-center shadow-xl">
-        <div class="text-5xl mb-1">💣</div>
-        <h2 class="font-arcade text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-amber-300 to-yellow-400">See Through Number</h2>
-        <p class="text-xs text-slate-400 mt-1">相手の4桁の暗号（重複あり / 0000〜9999）を解読せよ！</p>
+    <div id="mode-select-screen" style="max-width: 720px; margin: 0 auto; width: 100%;">
+      <div class="card-box" style="margin-bottom: 15px; text-align:center;">
+        <div style="font-size: 40px; line-height:1;">💣</div>
+        <p class="font-arcade" style="margin:6px 0 0; font-size: 20px; font-weight:bold; color:#e2e8f0;">See Through Number</p>
+        <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0;">4桁解読バトル</p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- CPUと対戦 枠 -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-center space-y-3 shadow-xl">
-          <div class="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-purple-600 to-rose-600 flex items-center justify-center text-2xl shadow-lg shadow-purple-500/20">🤖</div>
-          <h3 class="text-lg font-black text-slate-100">CPUと対戦</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">一人で練習できます！<br>CPUがランダムに4桁を設定し、論理的に解読してきます。</p>
-          <button onclick="startSetup('cpu')" class="w-full py-3 bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 rounded-xl font-black text-sm shadow-lg flex items-center justify-center gap-2 transition">
-            <span>🤖</span> CPUと対戦
-          </button>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; text-align:center;">
+        <!-- 友達と対戦 枠 -->
+        <div class="card-box">
+          <div style="width:48px; height:48px; margin:0 auto 8px; border-radius:12px; background: linear-gradient(135deg, #0d9488, #0891b2); display:flex; align-items:center; justify-content:center; font-size:24px;">🌐</div>
+          <p style="margin-top:0; font-weight:bold; color:#e2e8f0; font-size:16px;">友達と対戦</p>
+          <p style="font-size: 12px; color: #94a3b8; margin: 5px 0 10px; line-height:1.5;">好きな合言葉を決めて入力してね！</p>
+          <input type="text" id="room-id-input" placeholder="例: tanaka123" class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-sm text-center placeholder:text-slate-600 focus:border-cyan-500 outline-none" style="width:100%; box-sizing:border-box;">
+          <div style="display:flex; gap:8px; margin-top:10px;">
+            <button onclick="createRoom()" style="flex:1; background: linear-gradient(135deg, #f59e0b, #d97706); color:#020617; margin:0; padding:12px; border-radius:12px; font-size:13px;">部屋を作る</button>
+            <button onclick="joinRoom()" style="flex:1; background: linear-gradient(135deg, #0d9488, #0891b2); color:#fff; margin:0; padding:12px; border-radius:12px; font-size:13px;">部屋に入る</button>
+          </div>
+          <p id="online-status" style="color: #94a3b8; font-size: 14px; margin-top: 10px; min-height:18px;"></p>
         </div>
 
-        <!-- 友達と対戦 枠 (オンラインテンプレート = game1/game2と共通の方法) -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-center space-y-3 shadow-xl">
-          <div class="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-teal-500 to-cyan-600 flex items-center justify-center text-2xl shadow-lg shadow-cyan-500/20">🌐</div>
-          <h3 class="text-lg font-black text-slate-100">友達と対戦</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">好きな合言葉を決めて入力してね！<br>それぞれ4桁を設定して交互にコールします。</p>
-          <input id="room-id-input" type="text" placeholder="例: tanaka123" class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-sm text-center placeholder:text-slate-600 focus:border-cyan-500 outline-none">
-          <div class="flex gap-2">
-            <button onclick="createRoom()" class="flex-1 py-3 rounded-xl font-black text-xs bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black shadow-lg transition">部屋を作る</button>
-            <button onclick="joinRoom()" class="flex-1 py-3 rounded-xl font-black text-xs bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 text-white shadow-lg transition">部屋に入る</button>
-          </div>
-          <p id="online-status" class="text-xs text-slate-400 min-h-[18px]"></p>
+        <!-- 一人で対戦 枠 -->
+        <div class="card-box">
+          <div style="width:48px; height:48px; margin:0 auto 8px; border-radius:12px; background: linear-gradient(135deg, #7c3aed, #e11d48); display:flex; align-items:center; justify-content:center; font-size:24px;">🤖</div>
+          <p style="margin-top:0; font-weight:bold; color:#e2e8f0; font-size:16px;">一人でプレイ</p>
+          <p style="font-size: 12px; color: #94a3b8; margin: 5px 0 10px; line-height:1.5;">CPUと対戦できます</p>
+          <button onclick="startSetup('cpu')" style="background: linear-gradient(135deg, #f59e0b, #d97706); color:#020617; width: 100%; margin:0; padding:12px; border-radius:12px; font-size:14px;">🤖 CPUと対戦</button>
         </div>
       </div>
 
       <!-- ルール（選択画面に直書き） -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-left shadow-xl">
-        <p class="font-bold text-rose-300 text-sm mb-2">📖 遊び方（対戦中の画面では右上ボタンで確認）</p>
-        <p class="text-xs text-slate-400 leading-relaxed">・4桁の秘密の数字（重複あり / 0000〜9999）を解読<br>・コールすると判定：<b class="text-emerald-400">HIT</b> = 数字も桁も一致 / <b class="text-amber-400">BLOW</b> = 数字のみ一致（HIT分はBLOWから除外）<br>・例：正解「1123」→「1451」で <b>1 HIT, 1 BLOW</b><br>・先に相手の4桁を <b>4 HIT</b> させた方の勝利！</p>
+      <div class="card-box" style="margin-top: 15px; text-align:left;">
+        <p style="margin-top:0; font-weight:bold; color:#67e8f9; font-size:14px;">📖 ルール（対戦中は右上のボタンで確認できます）</p>
+        <div style="font-size: 13px; color: #cbd5e1; line-height: 1.7; margin: 10px 0 0;">
+          <div style="margin-bottom:8px;">
+            <b>① 目的</b> — 相手の4桁の秘密の数字（重複あり / 0000〜9999）を解読する。<br>
+            <span style="display:block; margin:6px 0;"><span style="font-size:26px;">🔢</span> <b>コール</b> — 4桁をコールすると判定が返る。ヒットは桁も一致</span>
+            <span style="display:block; margin:6px 0;"><span style="font-size:26px;">❓</span> <b>BLOW</b> — 数字のみ一致（ヒット分は除外）</span>
+            <span style="display:block; margin:6px 0;"><span style="font-size:26px;">🎯</span> <b>4 HIT</b> — 相手の暗号を完全解読</span>
+          </div>
+          <div style="margin-bottom:8px;"><b>② 例</b> — 正解「1123」に「1451」とコール → <span style="font-size:20px;">1 HIT, 1 BLOW</span></div>
+          <div><b>③ 勝利</b> — 先に相手の4桁を <b>4 HIT</b> させた方の勝ち！</div>
+        </div>
       </div>
     </div>
 
